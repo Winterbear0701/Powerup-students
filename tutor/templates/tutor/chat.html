@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NCERT AI Tutor - Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+        }
+        
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .message {
+            display: flex;
+            align-items: flex-start;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message.user {
+            justify-content: flex-end;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            padding: 15px 20px;
+            border-radius: 15px;
+            line-height: 1.6;
+        }
+        
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .message.assistant .message-content {
+            background: #f0f0f0;
+            color: #333;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin: 0 10px;
+        }
+        
+        .message.user .avatar {
+            order: 2;
+            background: #667eea;
+        }
+        
+        .message.assistant .avatar {
+            background: #4caf50;
+        }
+        
+        .suggestions {
+            padding: 10px 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .suggestion-btn {
+            padding: 8px 15px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .suggestion-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .input-area {
+            padding: 20px;
+            border-top: 2px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+            background: white;
+        }
+        
+        #messageInput {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        #messageInput:focus {
+            border-color: #667eea;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .btn-send {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-send:hover {
+            transform: scale(1.05);
+        }
+        
+        .btn-voice {
+            background: #4caf50;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .btn-voice.recording {
+            background: #f44336;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .loading {
+            display: none;
+            padding: 10px;
+            text-align: center;
+            color: #666;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .media-content {
+            margin-top: 10px;
+        }
+        
+        .media-content img {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+        
+        .media-content audio {
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .resources {
+            margin-top: 15px;
+            padding: 10px;
+            background: #fffacd;
+            border-radius: 10px;
+        }
+        
+        .resources h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .resource-link {
+            display: block;
+            padding: 8px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #667eea;
+            transition: all 0.2s;
+        }
+        
+        .resource-link:hover {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤖 NCERT AI Tutor</h1>
+        <p>Ask me anything about your studies!</p>
+    </div>
+    
+    <div class="chat-container">
+        <div class="messages" id="messages">
+            <div class="message assistant">
+                <div class="avatar">🤖</div>
+                <div class="message-content">
+                    <strong>Welcome back!</strong><br>
+                    I'm your AI tutor, ready to help you with any subject. What would you like to learn today?
+                </div>
+            </div>
+        </div>
+        
+        <div class="suggestions" id="suggestions">
+            <button class="suggestion-btn" onclick="askQuestion('Explain photosynthesis')">Explain photosynthesis</button>
+            <button class="suggestion-btn" onclick="askQuestion('Solve quadratic equations')">Solve quadratic equations</button>
+            <button class="suggestion-btn" onclick="askQuestion('What is democracy?')">What is democracy?</button>
+        </div>
+        
+        <div class="loading" id="loading">
+            🤖 Thinking...
+        </div>
+        
+        <div class="input-area">
+            <button class="btn btn-voice" id="voiceBtn" title="Voice Input">🎤</button>
+            <input type="text" id="messageInput" placeholder="Type your question here..." 
+                   onkeypress="if(event.key==='Enter') sendMessage()">
+            <button class="btn btn-send" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+    
+    <script>
+        let sessionId = null;
+        let isRecording = false;
+        
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message to chat
+            addMessage(message, 'user');
+            input.value = '';
+            
+            // Show loading
+            document.getElementById('loading').classList.add('active');
+            
+            try {
+                const response = await fetch('/api/chat/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: message,
+                        session_id: sessionId,
+                        include_audio: false,
+                        include_diagram: true
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    sessionId = data.session_id;
+                    
+                    // Add assistant response
+                    addMessage(data.response, 'assistant', {
+                        audio: data.audio_url,
+                        diagram: data.diagram_url,
+                        resources: data.resource_recommendations,
+                        suggestions: data.suggestions
+                    });
+                    
+                    // Update suggestions
+                    updateSuggestions(data.suggestions);
+                } else {
+                    addMessage('Sorry, I encountered an error. Please try again.', 'assistant');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage('Sorry, I could not connect to the server.', 'assistant');
+            } finally {
+                document.getElementById('loading').classList.remove('active');
+            }
+        }
+        
+        function addMessage(content, role, extras = {}) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.textContent = role === 'user' ? '👤' : '🤖';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = content.replace(/\n/g, '<br>');
+            
+            // Add media content
+            if (extras.diagram || extras.audio || extras.resources) {
+                const mediaDiv = document.createElement('div');
+                mediaDiv.className = 'media-content';
+                
+                if (extras.diagram) {
+                    const img = document.createElement('img');
+                    img.src = extras.diagram;
+                    img.alt = 'Diagram';
+                    mediaDiv.appendChild(img);
+                }
+                
+                if (extras.audio) {
+                    const audio = document.createElement('audio');
+                    audio.controls = true;
+                    audio.src = extras.audio;
+                    mediaDiv.appendChild(audio);
+                }
+                
+                if (extras.resources && extras.resources.length > 0) {
+                    const resourcesDiv = document.createElement('div');
+                    resourcesDiv.className = 'resources';
+                    resourcesDiv.innerHTML = '<h4>📚 Helpful Resources:</h4>';
+                    
+                    extras.resources.forEach(resource => {
+                        const link = document.createElement('a');
+                        link.className = 'resource-link';
+                        link.href = resource.url;
+                        link.target = '_blank';
+                        link.textContent = `📺 ${resource.title}`;
+                        resourcesDiv.appendChild(link);
+                    });
+                    
+                    mediaDiv.appendChild(resourcesDiv);
+                }
+                
+                contentDiv.appendChild(mediaDiv);
+            }
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(contentDiv);
+            messagesDiv.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function updateSuggestions(suggestions) {
+            if (!suggestions || suggestions.length === 0) return;
+            
+            const suggestionsDiv = document.getElementById('suggestions');
+            suggestionsDiv.innerHTML = '';
+            
+            suggestions.forEach(suggestion => {
+                const btn = document.createElement('button');
+                btn.className = 'suggestion-btn';
+                btn.textContent = suggestion;
+                btn.onclick = () => askQuestion(suggestion);
+                suggestionsDiv.appendChild(btn);
+            });
+        }
+        
+        function askQuestion(question) {
+            document.getElementById('messageInput').value = question;
+            sendMessage();
+        }
+        
+        // Voice input (simplified - requires proper implementation)
+        document.getElementById('voiceBtn').addEventListener('click', function() {
+            if (!isRecording) {
+                // Start recording
+                this.classList.add('recording');
+                isRecording = true;
+                alert('Voice recording feature requires microphone permissions and will be implemented with Web Speech API');
+                // TODO: Implement actual voice recording
+                setTimeout(() => {
+                    this.classList.remove('recording');
+                    isRecording = false;
+                }, 2000);
+            } else {
+                // Stop recording
+                this.classList.remove('recording');
+                isRecording = false;
+            }
+        });
+    </script>
+</body>
+</html>

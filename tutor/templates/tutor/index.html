@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NCERT AI Tutor - Learn Smarter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 20px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .feature-list {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .feature-item {
+            padding: 10px 0;
+            color: #555;
+        }
+        
+        .feature-item::before {
+            content: "✓ ";
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .emoji {
+            font-size: 3em;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="emoji">🎓📚</div>
+        <h1>NCERT AI Tutor</h1>
+        <p class="subtitle">Your Personal Learning Companion for Classes 5-10</p>
+        
+        <div class="feature-list">
+            <div class="feature-item">Grade-specific personalized teaching</div>
+            <div class="feature-item">Interactive chat with AI tutor</div>
+            <div class="feature-item">Voice input & audio explanations</div>
+            <div class="feature-item">Visual diagrams & step-by-step solutions</div>
+            <div class="feature-item">Adaptive learning based on your progress</div>
+        </div>
+        
+        <form id="profileForm">
+            <div class="form-group">
+                <label for="name">Your Name</label>
+                <input type="text" id="name" name="name" required placeholder="Enter your name">
+            </div>
+            
+            <div class="form-group">
+                <label for="age">Your Age</label>
+                <input type="number" id="age" name="age" min="10" max="18" placeholder="Enter your age">
+            </div>
+            
+            <div class="form-group">
+                <label for="grade">Your Class/Grade</label>
+                <select id="grade" name="grade" required>
+                    <option value="">Select your class</option>
+                    <option value="5">Class 5</option>
+                    <option value="6">Class 6</option>
+                    <option value="7">Class 7</option>
+                    <option value="8">Class 8</option>
+                    <option value="9">Class 9</option>
+                    <option value="10">Class 10</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="learning_style">Preferred Learning Style</label>
+                <select id="learning_style" name="learning_style">
+                    <option value="mixed">Mixed (Visual + Text + Audio)</option>
+                    <option value="visual">Visual (Diagrams & Videos)</option>
+                    <option value="auditory">Auditory (Audio Explanations)</option>
+                    <option value="text">Text-based (Reading)</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn">Start Learning 🚀</button>
+        </form>
+    </div>
+    
+    <script>
+        document.getElementById('profileForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                age: parseInt(document.getElementById('age').value) || null,
+                grade: parseInt(document.getElementById('grade').value),
+                preferred_learning_style: document.getElementById('learning_style').value
+            };
+            
+            try {
+                const response = await fetch('/api/profile/setup/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    window.location.href = '/chat/';
+                } else {
+                    alert('Error setting up profile. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error connecting to server. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>
