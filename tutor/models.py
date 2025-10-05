@@ -7,13 +7,72 @@ import json
 class StudentProfile(models.Model):
     """Extended user profile for students"""
     GRADE_CHOICES = [(i, f'Class {i}') for i in range(5, 11)]
-    
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student_profile')
     name = models.CharField(max_length=100)
     age = models.IntegerField(null=True, blank=True)
     grade = models.IntegerField(choices=GRADE_CHOICES, default=5)
-    
+
+    # LLM Model Selection
+    selected_llm_model = models.CharField(
+        max_length=20,
+        choices=[
+            ('llama3.2', 'Llama 3.2'),
+            ('gemma3', 'Gemma 3'),
+            ('gemini', 'Gemini API')
+        ],
+        default='llama3.2'
+    )
+
     # Adaptive Learning Metrics
+    total_queries = models.IntegerField(default=0)
+    successful_interactions = models.IntegerField(default=0)
+    struggle_count = models.IntegerField(default=0)  # Times needed simpler explanations
+    current_difficulty_level = models.CharField(
+        max_length=20,
+        choices=[
+            ('beginner', 'Beginner'),
+            ('intermediate', 'Intermediate'),
+            ('advanced', 'Advanced')
+        ],
+        default='intermediate'
+    )
+
+    # Preferences
+    preferred_learning_style = models.CharField(
+        max_length=20,
+        choices=[
+            ('visual', 'Visual'),
+            ('auditory', 'Auditory'),
+            ('text', 'Text-based'),
+            ('mixed', 'Mixed')
+        ],
+        default='mixed'
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.name} (Class {self.grade})"
+
+    def adjust_difficulty(self, success: bool):
+        """Adjust difficulty level based on user performance"""
+        if not success:
+            self.struggle_count += 1
+            if self.struggle_count >= 3 and self.current_difficulty_level != 'beginner':
+                levels = ['advanced', 'intermediate', 'beginner']
+                current_index = levels.index(self.current_difficulty_level)
+                self.current_difficulty_level = levels[min(current_index + 1, 2)]
+                self.struggle_count = 0
+        else:
+            self.successful_interactions += 1
+            if self.successful_interactions >= 5 and self.current_difficulty_level != 'advanced':
+                levels = ['beginner', 'intermediate', 'advanced']
+                current_index = levels.index(self.current_difficulty_level)
+                self.current_difficulty_level = levels[min(current_index + 1, 2)]
+                self.successful_interactions = 0
+        self.save()    # Adaptive Learning Metrics
     total_queries = models.IntegerField(default=0)
     successful_interactions = models.IntegerField(default=0)
     struggle_count = models.IntegerField(default=0)  # Times needed simpler explanations

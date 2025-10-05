@@ -135,9 +135,11 @@ class TutorService:
             messages.append({'role': 'user', 'content': user_prompt})
             
             # Step 6: Generate response using LLM
+            selected_model = student_profile.get('selected_model', 'llama3.2')
             response, llm_metadata = self.llm_service.generate_response(
                 messages=messages,
                 student_grade=grade,
+                selected_model=selected_model,
                 use_cache=True
             )
             

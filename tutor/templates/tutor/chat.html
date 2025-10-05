@@ -10,7 +10,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f5f5f5;
@@ -18,24 +18,104 @@
             display: flex;
             flex-direction: column;
         }
-        
+
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 20px;
-            text-align: center;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        
-        .header h1 {
-            font-size: 1.8em;
-            margin-bottom: 5px;
+
+        .header-left h1 {
+            font-size: 1.5em;
+            margin-bottom: 2px;
         }
-        
-        .header p {
+
+        .header-left p {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .model-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .model-selector label {
+            font-size: 0.9em;
             opacity: 0.9;
         }
-        
+
+        .model-selector select {
+            padding: 0.5rem;
+            border: none;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 0.9em;
+        }
+
+        .model-selector select:focus {
+            outline: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+
+        .user-details {
+            font-size: 0.9em;
+        }
+
+        .user-details .name {
+            font-weight: 500;
+        }
+
+        .user-details .grade {
+            opacity: 0.8;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9em;
+            transition: background-color 0.2s;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
         .chat-container {
             flex: 1;
             display: flex;
@@ -46,7 +126,7 @@
             background: white;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
-        
+
         .messages {
             flex: 1;
             overflow-y: auto;
@@ -55,41 +135,47 @@
             flex-direction: column;
             gap: 15px;
         }
-        
+
         .message {
             display: flex;
             align-items: flex-start;
             animation: fadeIn 0.3s;
         }
-        
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
+
         .message.user {
             justify-content: flex-end;
         }
-        
+
         .message-content {
             max-width: 70%;
             padding: 15px 20px;
             border-radius: 15px;
             line-height: 1.6;
         }
-        
+
         .message.user .message-content {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border-bottom-right-radius: 5px;
         }
-        
+
         .message.assistant .message-content {
             background: #f0f0f0;
             color: #333;
             border-bottom-left-radius: 5px;
         }
-        
+
+        .message-meta {
+            font-size: 0.8em;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
         .avatar {
             width: 40px;
             height: 40px;
@@ -100,16 +186,16 @@
             font-size: 20px;
             margin: 0 10px;
         }
-        
+
         .message.user .avatar {
             order: 2;
             background: #667eea;
         }
-        
+
         .message.assistant .avatar {
             background: #4caf50;
         }
-        
+
         .suggestions {
             padding: 10px 20px;
             display: flex;
@@ -117,7 +203,7 @@
             flex-wrap: wrap;
             border-top: 1px solid #e0e0e0;
         }
-        
+
         .suggestion-btn {
             padding: 8px 15px;
             background: #f0f0f0;
@@ -127,13 +213,13 @@
             font-size: 14px;
             transition: all 0.2s;
         }
-        
+
         .suggestion-btn:hover {
             background: #667eea;
             color: white;
             border-color: #667eea;
         }
-        
+
         .input-area {
             padding: 20px;
             border-top: 2px solid #e0e0e0;
@@ -141,7 +227,7 @@
             gap: 10px;
             background: white;
         }
-        
+
         #messageInput {
             flex: 1;
             padding: 15px;
@@ -150,11 +236,11 @@
             font-size: 16px;
             outline: none;
         }
-        
+
         #messageInput:focus {
             border-color: #667eea;
         }
-        
+
         .btn {
             padding: 12px 25px;
             border: none;
@@ -164,16 +250,16 @@
             font-weight: 600;
             transition: all 0.2s;
         }
-        
+
         .btn-send {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-        
+
         .btn-send:hover {
             transform: scale(1.05);
         }
-        
+
         .btn-voice {
             background: #4caf50;
             color: white;
@@ -185,55 +271,55 @@
             justify-content: center;
             font-size: 20px;
         }
-        
+
         .btn-voice.recording {
             background: #f44336;
             animation: pulse 1s infinite;
         }
-        
+
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.1); }
         }
-        
+
         .loading {
             display: none;
             padding: 10px;
             text-align: center;
             color: #666;
         }
-        
+
         .loading.active {
             display: block;
         }
-        
+
         .media-content {
             margin-top: 10px;
         }
-        
+
         .media-content img {
             max-width: 100%;
             border-radius: 10px;
             margin-top: 10px;
         }
-        
+
         .media-content audio {
             width: 100%;
             margin-top: 10px;
         }
-        
+
         .resources {
             margin-top: 15px;
             padding: 10px;
             background: #fffacd;
             border-radius: 10px;
         }
-        
+
         .resources h4 {
             margin-bottom: 10px;
             color: #333;
         }
-        
+
         .resource-link {
             display: block;
             padding: 8px;
@@ -244,7 +330,7 @@
             color: #667eea;
             transition: all 0.2s;
         }
-        
+
         .resource-link:hover {
             background: #667eea;
             color: white;
@@ -253,133 +339,208 @@
 </head>
 <body>
     <div class="header">
-        <h1>🤖 NCERT AI Tutor</h1>
-        <p>Ask me anything about your studies!</p>
+        <div class="header-left">
+            <h1>🤖 NCERT AI Tutor</h1>
+            <p>Ask me anything about your studies!</p>
+        </div>
+        <div class="header-right">
+            <div class="model-selector">
+                <label for="modelSelect">Model:</label>
+                <select id="modelSelect">
+                    {% for model_key, model_info in available_models.items %}
+                        <option value="{{ model_key }}"
+                                {% if profile.selected_llm_model == model_key %}selected{% endif %}
+                                {% if not model_info.available %}disabled{% endif %}>
+                            {{ model_info.name }}{% if not model_info.available %} (Unavailable){% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar">{{ profile.name|first|upper }}</div>
+                <div class="user-details">
+                    <div class="name">{{ profile.name }}</div>
+                    <div class="grade">Class {{ profile.grade }}</div>
+                </div>
+            </div>
+            <div class="nav-links">
+                <a href="{% url 'tutor:profile' %}">Profile</a>
+                {% if user.is_admin %}
+                    <a href="{% url 'tutor:admin_dashboard' %}">Admin</a>
+                {% endif %}
+                <a href="{% url 'tutor:logout' %}">Logout</a>
+            </div>
+        </div>
     </div>
-    
+
     <div class="chat-container">
         <div class="messages" id="messages">
             <div class="message assistant">
                 <div class="avatar">🤖</div>
                 <div class="message-content">
-                    <strong>Welcome back!</strong><br>
-                    I'm your AI tutor, ready to help you with any subject. What would you like to learn today?
+                    <strong>Welcome back, {{ profile.name }}!</strong><br>
+                    I'm your AI tutor, ready to help you with Class {{ profile.grade }} studies.
+                    {% if profile.selected_llm_model %}
+                        You're currently using the {{ available_models|get_item:profile.selected_llm_model.name }} model.
+                    {% endif %}
+                    What would you like to learn today?
                 </div>
             </div>
         </div>
-        
+
         <div class="suggestions" id="suggestions">
             <button class="suggestion-btn" onclick="askQuestion('Explain photosynthesis')">Explain photosynthesis</button>
             <button class="suggestion-btn" onclick="askQuestion('Solve quadratic equations')">Solve quadratic equations</button>
             <button class="suggestion-btn" onclick="askQuestion('What is democracy?')">What is democracy?</button>
         </div>
-        
+
         <div class="loading" id="loading">
             🤖 Thinking...
         </div>
-        
+
         <div class="input-area">
             <button class="btn btn-voice" id="voiceBtn" title="Voice Input">🎤</button>
-            <input type="text" id="messageInput" placeholder="Type your question here..." 
+            <input type="text" id="messageInput" placeholder="Type your question here..."
                    onkeypress="if(event.key==='Enter') sendMessage()">
             <button class="btn btn-send" onclick="sendMessage()">Send</button>
         </div>
     </div>
-    
+
     <script>
         let sessionId = null;
         let isRecording = false;
-        
+        let currentModel = '{{ profile.selected_llm_model }}';
+
+        // Model selection change
+        document.getElementById('modelSelect').addEventListener('change', async function() {
+            const newModel = this.value;
+
+            try {
+                const response = await fetch('/api/profile/update-model/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken()
+                    },
+                    body: JSON.stringify({ model: newModel })
+                });
+
+                if (response.ok) {
+                    currentModel = newModel;
+                    addMessage(`✅ Switched to ${this.options[this.selectedIndex].text.split(' (')[0]} model!`, 'assistant');
+                } else {
+                    alert('Failed to update model. Please try again.');
+                    this.value = currentModel; // Reset to previous value
+                }
+            } catch (error) {
+                console.error('Error updating model:', error);
+                alert('Failed to update model. Please try again.');
+                this.value = currentModel;
+            }
+        });
+
         async function sendMessage() {
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
-            
+
             if (!message) return;
-            
+
             // Add user message to chat
             addMessage(message, 'user');
             input.value = '';
-            
+
             // Show loading
             document.getElementById('loading').classList.add('active');
-            
+
             try {
                 const response = await fetch('/api/chat/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken()
                     },
                     body: JSON.stringify({
                         query: message,
                         session_id: sessionId,
+                        selected_model: currentModel,
                         include_audio: false,
                         include_diagram: true
                     })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (response.ok) {
                     sessionId = data.session_id;
-                    
-                    // Add assistant response
+
+                    // Add assistant response with metadata
                     addMessage(data.response, 'assistant', {
                         audio: data.audio_url,
                         diagram: data.diagram_url,
                         resources: data.resource_recommendations,
-                        suggestions: data.suggestions
+                        suggestions: data.suggestions,
+                        model_used: data.model_used,
+                        processing_time: data.processing_time
                     });
-                    
+
                     // Update suggestions
                     updateSuggestions(data.suggestions);
                 } else {
-                    addMessage('Sorry, I encountered an error. Please try again.', 'assistant');
+                    addMessage(`❌ Error: ${data.error || 'Something went wrong. Please try again.'}`, 'assistant');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                addMessage('Sorry, I could not connect to the server.', 'assistant');
+                addMessage('❌ Sorry, I could not connect to the server. Please check your connection and try again.', 'assistant');
             } finally {
                 document.getElementById('loading').classList.remove('active');
             }
         }
-        
+
         function addMessage(content, role, extras = {}) {
             const messagesDiv = document.getElementById('messages');
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${role}`;
-            
+
             const avatar = document.createElement('div');
             avatar.className = 'avatar';
             avatar.textContent = role === 'user' ? '👤' : '🤖';
-            
+
             const contentDiv = document.createElement('div');
             contentDiv.className = 'message-content';
             contentDiv.innerHTML = content.replace(/\n/g, '<br>');
-            
+
+            // Add metadata for assistant messages
+            if (role === 'assistant' && extras.model_used) {
+                const metaDiv = document.createElement('div');
+                metaDiv.className = 'message-meta';
+                metaDiv.textContent = `Model: ${extras.model_used} • ${extras.processing_time ? extras.processing_time.toFixed(2) + 's' : ''}`;
+                contentDiv.appendChild(metaDiv);
+            }
+
             // Add media content
             if (extras.diagram || extras.audio || extras.resources) {
                 const mediaDiv = document.createElement('div');
                 mediaDiv.className = 'media-content';
-                
+
                 if (extras.diagram) {
                     const img = document.createElement('img');
                     img.src = extras.diagram;
                     img.alt = 'Diagram';
                     mediaDiv.appendChild(img);
                 }
-                
+
                 if (extras.audio) {
                     const audio = document.createElement('audio');
                     audio.controls = true;
                     audio.src = extras.audio;
                     mediaDiv.appendChild(audio);
                 }
-                
+
                 if (extras.resources && extras.resources.length > 0) {
                     const resourcesDiv = document.createElement('div');
                     resourcesDiv.className = 'resources';
                     resourcesDiv.innerHTML = '<h4>📚 Helpful Resources:</h4>';
-                    
+
                     extras.resources.forEach(resource => {
                         const link = document.createElement('a');
                         link.className = 'resource-link';
@@ -388,27 +549,27 @@
                         link.textContent = `📺 ${resource.title}`;
                         resourcesDiv.appendChild(link);
                     });
-                    
+
                     mediaDiv.appendChild(resourcesDiv);
                 }
-                
+
                 contentDiv.appendChild(mediaDiv);
             }
-            
+
             messageDiv.appendChild(avatar);
             messageDiv.appendChild(contentDiv);
             messagesDiv.appendChild(messageDiv);
-            
+
             // Scroll to bottom
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
-        
+
         function updateSuggestions(suggestions) {
             if (!suggestions || suggestions.length === 0) return;
-            
+
             const suggestionsDiv = document.getElementById('suggestions');
             suggestionsDiv.innerHTML = '';
-            
+
             suggestions.forEach(suggestion => {
                 const btn = document.createElement('button');
                 btn.className = 'suggestion-btn';
@@ -417,26 +578,40 @@
                 suggestionsDiv.appendChild(btn);
             });
         }
-        
+
         function askQuestion(question) {
             document.getElementById('messageInput').value = question;
             sendMessage();
         }
-        
-        // Voice input (simplified - requires proper implementation)
+
+        function getCsrfToken() {
+            // Get CSRF token from cookie
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Voice input (placeholder - requires proper implementation)
         document.getElementById('voiceBtn').addEventListener('click', function() {
             if (!isRecording) {
-                // Start recording
                 this.classList.add('recording');
                 isRecording = true;
                 alert('Voice recording feature requires microphone permissions and will be implemented with Web Speech API');
-                // TODO: Implement actual voice recording
                 setTimeout(() => {
                     this.classList.remove('recording');
                     isRecording = false;
                 }, 2000);
             } else {
-                // Stop recording
                 this.classList.remove('recording');
                 isRecording = false;
             }

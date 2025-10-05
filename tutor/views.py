@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, FileResponse
 from rest_framework import status, viewsets
@@ -22,13 +22,82 @@ logger = logging.getLogger(__name__)
 # ============ HTML Views ============
 
 def index(request):
-    """Main landing page"""
+    """Main landing page - redirects to login if not authenticated"""
+    if request.user.is_authenticated:
+        return redirect('dashboard')
     return render(request, 'tutor/index.html')
 
 
+@login_required
+def student_dashboard(request):
+    """Student dashboard with learning options"""
+    try:
+        profile = request.user.student_profile
+    except StudentProfile.DoesNotExist:
+        # Create profile if it doesn't exist
+        profile = StudentProfile.objects.create(
+            user=request.user,
+            name=request.user.get_full_name() or request.user.username,
+            grade=5
+        )
+
+    # Get recent activity
+    recent_conversations = Conversation.objects.filter(
+        student=profile
+    ).order_by('-started_at')[:5]
+
+    context = {
+        'profile': profile,
+        'recent_conversations': recent_conversations,
+    }
+
+    return render(request, 'tutor/dashboard.html', context)
+
+
+@login_required
 def chat_interface(request):
     """Chat interface page"""
-    return render(request, 'tutor/chat.html')
+    try:
+        profile = request.user.student_profile
+    except StudentProfile.DoesNotExist:
+        # Create profile if it doesn't exist
+        profile = StudentProfile.objects.create(
+            user=request.user,
+            name=request.user.get_full_name() or request.user.username,
+            grade=5
+        )
+
+    # Get available models
+    from .services.llm_service import get_llm_service
+    llm_service = get_llm_service()
+    available_models = llm_service.get_available_models()
+
+    context = {
+        'profile': profile,
+        'available_models': available_models,
+    }
+
+    return render(request, 'tutor/chat.html', context)
+
+
+@login_required
+def mcq_practice(request):
+    """MCQ practice page"""
+    try:
+        profile = request.user.student_profile
+    except StudentProfile.DoesNotExist:
+        # Create profile if it doesn't exist
+        profile = StudentProfile.objects.create(
+            user=request.user,
+            name=request.user.get_full_name() or request.user.username,
+            grade=5
+        )
+
+    context = {
+        'profile': profile,
+    }
+
+    return render(request, 'tutor/mcq.html', context)
 
 
 # ============ API Views ============
@@ -62,6 +131,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
 
 @api_view(['POST'])
+@login_required
 def chat_query(request):
     """
     Handle chat query
@@ -70,22 +140,27 @@ def chat_query(request):
         "query": "What is photosynthesis?",
         "session_id": "optional-session-id",
         "include_audio": false,
-        "include_diagram": true
+        "include_diagram": true,
+        "selected_model": "llama3.2"  // Optional: override user's default model
     }
     """
     try:
         serializer = ChatQuerySerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Get or create student profile from session
-        student_profile = get_or_create_student_from_session(request)
-        if not student_profile:
+
+        # Get student profile
+        try:
+            student_profile = request.user.student_profile
+        except StudentProfile.DoesNotExist:
             return Response(
-                {'error': 'Please set up your profile first'},
+                {'error': 'Please complete your profile setup first'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
+        # Get selected model (from request or user profile)
+        selected_model = request.data.get('selected_model', student_profile.selected_llm_model)
+
         # Get or create conversation
         session_id = serializer.validated_data.get('session_id') or str(uuid.uuid4())
         conversation, created = Conversation.objects.get_or_create(
@@ -93,12 +168,12 @@ def chat_query(request):
             student=student_profile,
             defaults={'is_active': True}
         )
-        
+
         # Get conversation history
         history_messages = Message.objects.filter(
             conversation=conversation
         ).order_by('timestamp')[:10]
-        
+
         conversation_history = []
         for msg in history_messages:
             if msg.role == 'user':
@@ -108,7 +183,7 @@ def chat_query(request):
                 })
             elif msg.role == 'assistant' and conversation_history:
                 conversation_history[-1]['bot'] = msg.content
-        
+
         # Process query
         tutor_service = get_tutor_service()
         result = tutor_service.process_query(
@@ -117,38 +192,39 @@ def chat_query(request):
                 'name': student_profile.name,
                 'grade': student_profile.grade,
                 'difficulty_level': student_profile.current_difficulty_level,
-                'struggle_count': student_profile.struggle_count
+                'struggle_count': student_profile.struggle_count,
+                'selected_model': selected_model
             },
             conversation_history=conversation_history,
             include_audio=serializer.validated_data.get('include_audio', False),
             include_diagram=serializer.validated_data.get('include_diagram', True)
         )
-        
+
         # Save user message
         user_message = Message.objects.create(
             conversation=conversation,
             role='user',
             content=serializer.validated_data['query']
         )
-        
+
         # Save assistant response
         assistant_message = Message.objects.create(
             conversation=conversation,
             role='assistant',
             content=result['response'],
             retrieval_context=str(result.get('sources', [])),
-            llm_model_used=result['metadata'].get('llm', {}).get('model', 'unknown'),
+            llm_model_used=result['metadata'].get('llm', {}).get('model', selected_model),
             response_time=result['processing_time'],
             has_audio=bool(result.get('audio_file')),
             audio_file=result.get('audio_file'),
             has_diagram=bool(result.get('diagram_file')),
             diagram_file=result.get('diagram_file')
         )
-        
+
         # Update student stats
         student_profile.total_queries += 1
         student_profile.save()
-        
+
         # Prepare response
         response_data = {
             'response': result['response'],
@@ -158,14 +234,15 @@ def chat_query(request):
             'suggestions': result.get('suggestions', []),
             'resource_recommendations': result.get('resource_recommendations', []),
             'processing_time': result['processing_time'],
+            'model_used': result['metadata'].get('llm', {}).get('model', selected_model),
             'has_audio': bool(result.get('audio_file')),
             'audio_url': f"/api/media/{os.path.basename(result['audio_file'])}" if result.get('audio_file') else None,
             'has_diagram': bool(result.get('diagram_file')),
             'diagram_url': f"/api/media/{os.path.basename(result['diagram_file'])}" if result.get('diagram_file') else None
         }
-        
+
         return Response(response_data, status=status.HTTP_200_OK)
-        
+
     except Exception as e:
         logger.error(f"Error in chat_query: {e}", exc_info=True)
         return Response(
